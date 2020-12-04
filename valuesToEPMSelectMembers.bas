@@ -1,4 +1,10 @@
-'This will not work in Non-English versions of BPC
+'This will not work in Non-English versions of BPC.
+'It is intended to turn a list of accounts/dates/companies into EPMSelectMembers
+'to make it easier for customers/clients to pick which dimension should be where 
+'in a report. Use at your own risk.
+
+
+
 Sub turnToSelections()
 Const theFormulaToReplace = "=EPMSelectMember(""zzTheModelzz"",""zztheMemberzz"")"
 Dim theErrorText As String
