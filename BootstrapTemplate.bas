@@ -23,8 +23,6 @@ End Function
 Private Function before_Refresh()
   ''to cancel refresh
 
-
-
   'timer
   If Not stopTimer Then
       beginTimeOfRefresh = Now
@@ -34,6 +32,13 @@ Private Function before_Refresh()
 End Function
 
 
+Private Function BEFORE_SAVE
+
+   'to cancel
+   'Before_Save = false
+End Function
+   
+   
 Private Function after_Refresh()
   'after refresh code
 
