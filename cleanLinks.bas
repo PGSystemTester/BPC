@@ -1,9 +1,15 @@
-Sub clearLinksToOtherSheets()
 'Run this macro with the sheet you wish to clean selected
+Sub clearLinksToOtherSheets()
+    Const turnOffEvents As Boolean = False 'set this to true if process crashes.
+
     Dim aCell As Range, thisWS As Worksheet, ws As Worksheet
     Set thisWS = ActiveSheet
     
-    Application.EnableEvents = False
+    If turnOffEvents Then
+        Application.EnableEvents = False
+        Application.Calculation = xlCalculationManual
+    End If
+    
     
     For Each aCell In thisWS.UsedRange.Cells
         If Not Application.WorksheetFunction.IsFormula(aCell) Then
@@ -17,5 +23,10 @@ Sub clearLinksToOtherSheets()
             Next ws
         End If
     Next aCell
-    Application.EnableEvents = True
+    
+    If turnOffEvents Then
+        Application.Calculation = xlCalculationAutomatic
+        Application.EnableEvents = True
+    End If
+    
 End Sub
