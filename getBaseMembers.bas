@@ -1,9 +1,9 @@
-option explicit
+Option Explicit
 'Code modified from
 'https://blogs.sap.com/2019/06/24/bpc-nw-10-vba-function-to-get-bassomeparent-dimension-members-list/
 
 Public Function getBaseMembers(theDim As String, theParent As String)
-  Const strSplitter As String = ";:"
+  Const strSplitter As String = ";"
   Dim tempArray() As String
       tempArray = GetBAS(theDim, theParent, ActiveSheet)
       
@@ -212,7 +212,7 @@ nopE:
 End Function
 
 Private Function testBpcIsMicrosoft(theConnection As String) As Boolean
-    If InStr(1, Left(theConnction, InStr(1, theConnction, "[", vbTextCompare)), "FPM_BPCMS", vbTextCompare) > 0 Then
+    If InStr(1, Left(theConnection, InStr(1, theConnection, "[", vbTextCompare)), "FPM_BPCMS", vbTextCompare) > 0 Then
         testBpcIsMicrosoft = True
     End If
 
