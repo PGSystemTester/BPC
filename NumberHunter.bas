@@ -1,3 +1,4 @@
+
 Const questionforReduction As String = "The row axis has dimensions with a single member in it. Would you like to move these members to the column axis?"
 Const sName As String = "NunberHunter_"
 Const showGridelines As Boolean = False
@@ -18,7 +19,6 @@ Type i_DIMENSION
     i_Type As String * 1
     i_inREPORT As Boolean
     i_DisplayType As displyTYPE
-
 End Type
 
 Enum displyTYPE
@@ -29,48 +29,46 @@ End Enum
 
 
 Sub NumberHunter()
-Set EA = Nothing
-Call Full_Number_Hunter(ActiveCell)
-Set EA = Nothing
-
+    Set EA = Nothing
+    Call Full_Number_Hunter(ActiveCell)
+    Set EA = Nothing
 End Sub
 
 Sub addRemoveBotton(adIsTrue As Boolean)
-Const zCaption = "Number Hunter"
-Const zMacro = "NumberHunter"
-Dim iconExist As Boolean
-
-'must have this code in workbook module
-    'Private Sub Workbook_Activate()
-    '    Call addRemoveBotton(True)
-    'End Sub
-    '
-    'Private Sub Workbook_Deactivate()
-    '    Call addRemoveBotton(False)
-    'End Sub
-
-
-iconExist = testIfIconExists(zCaption)
-
-If adIsTrue Then
-    If testIfIconExists("EPM") And Not iconExist Then
+    Const zCaption = "Number Hunter"
+    Const zMacro = "NumberHunter"
+    Dim iconExist As Boolean
     
-        Dim cmdBtn As CommandBarButton
-       Set cmdBtn = Application.CommandBars("Cell").Controls.Add(Temporary:=True)
+    'must have this code in workbook module
+        'Private Sub Workbook_Activate()
+        '    Call addRemoveBotton(True)
+        'End Sub
+        '
+        'Private Sub Workbook_Deactivate()
+        '    Call addRemoveBotton(False)
+        'End Sub
+    
+    
+    iconExist = testIfIconExists(zCaption)
+    
+    If adIsTrue Then
+        If testIfIconExists("EPM") And Not iconExist Then
         
-        With cmdBtn
-            .Caption = zCaption
-           .Style = msoButtonCaption
-           .OnAction = zMacro
-        End With
-    End If
-ElseIf iconExist Then
-
-    Call clearButtons(zCaption)
+            Dim cmdBtn As CommandBarButton
+           Set cmdBtn = Application.CommandBars("Cell").Controls.Add(Temporary:=True)
+            
+            With cmdBtn
+                .Caption = zCaption
+               .Style = msoButtonCaption
+               .OnAction = zMacro
+            End With
+        End If
+    ElseIf iconExist Then
     
-End If
+        Call clearButtons(zCaption)
+        
+    End If
 
-     
 End Sub
 
 
@@ -161,6 +159,7 @@ Set ws = rCell.Worksheet
         
         ActiveWindow.DisplayGridlines = showGridelines
 
+
         EA.CreateReport ActiveSheet, EA.GetActiveConnection(ws), "000", _
             ReturnDimMember("R"), 1, _
             ReturnDimMember("A"), 1, Range("a1")
@@ -189,7 +188,6 @@ Set ws = rCell.Worksheet
         Next d
             
         EA.SetSheetOption nws, 7, True
-        
         EA.SetSheetOption nws, 111, True 'Clear formatting
         
         
@@ -200,14 +198,12 @@ Set ws = rCell.Worksheet
 
         EA.SetSheetOption nws, 100, True 'Show row header
         EA.RefreshActiveSheet
-               
 
         
         'check for single member rows.
         Call ClearSingleDimRows
         
         Call ReducereportSize(nws)
-
 
         Range(EA.GetDataTopLeftCell(nws, "000")).Select
         
@@ -223,8 +219,6 @@ RPT_ID = ""
 Set ws = Nothing
 Set EA = Nothing
 StopEverything = False
-
-
 End Sub
 
 
@@ -247,14 +241,9 @@ Private Function getReportID(rCell As Range) As String
         
         End If
     Next r
-    
+
     StopEverything = True
-
-
 End Function
-
-
-
 
 Private Function getROWmembers(rCell As Range) As String
 Dim c As Long, allRowMembers() As String, theDim As Range, memberID As String, axis_RPT_ID As String
@@ -262,14 +251,11 @@ Dim c As Long, allRowMembers() As String, theDim As Range, memberID As String, a
 If EA Is Nothing Then Set EA = ntt_BPC_API
 
 axis_RPT_ID = EA.GetRowAxisOwner(ws, RPT_ID)
+
 If axis_RPT_ID = "" Then axis_RPT_ID = RPT_ID
-
-
-allRowMembers = EA.GetRowAxisMembers(ws, RPT_ID)
-
+    allRowMembers = EA.GetRowAxisMembers(ws, RPT_ID)
 
     Dim columnX As Long: columnX = FirstRowAxisNumber(allRowMembers(0))
-
 
     If StopEverything Then Exit Function
 
@@ -277,27 +263,21 @@ allRowMembers = EA.GetRowAxisMembers(ws, RPT_ID)
 'Loop through all members in Row Axis
     For c = columnX To columnX + EA.GetRowAxisDimensionCount(rCell.Worksheet, RPT_ID) - 1
         Set theDim = ws.Cells(rCell.Row, c)
+             
         
-
         Do Until Not IsEmpty(theDim)
             Set theDim = theDim.Offset(-1, 0)
         Loop
         
         'capture memberID
         memberID = Evaluate("=EPMMemberID(" & theDim.Address & ")")
-       
-        
+                
         'Test if LOCAL MEMBER or something else
         If memberID = Evaluate("=EPMMemberID(xfa999999)") Then
             Set LocalMemberFound = theDim
             StopEverything = True
             getROWmembers = "end"
             Exit For
-        
-        
-        Else
-            'defense code
-           ' StopEverything = Evaluate("=Iserror(Colerror)")
 
         End If
         
@@ -305,7 +285,6 @@ allRowMembers = EA.GetRowAxisMembers(ws, RPT_ID)
         getROWmembers = getROWmembers & memberID & ","
     
     Next c
-
 'gets rid of last comma
 getROWmembers = Mid(getROWmembers, 1, Len(getROWmembers) - 1)
 
@@ -313,163 +292,149 @@ End Function
 
 
 Private Function FirstRowAxisNumber(memberID As String) As Long
-If EA Is Nothing Then Set EA = ntt_BPC_API
-
-Dim axisRPT_ID As String
-
-'confirm the row axis is not shared
-axisRPT_ID = EA.GetRowAxisOwner(ws, RPT_ID)
-
-If axisRPT_ID = "" Then axisRPT_ID = RPT_ID
-
-'find upper left cell
-Dim uCell As Range
-Set uCell = ws.Range(EA.GetDataTopLeftCell(ws, axisRPT_ID)).Offset(0, -1)
-
-'find first value that is closet to left
-Dim goThisWay As Long, totalMembers As Long
-goThisWay = -1
-
+    If EA Is Nothing Then Set EA = ntt_BPC_API
+    
+    Dim axisRPT_ID As String
+    'confirm the row axis is not shared
+    axisRPT_ID = EA.GetRowAxisOwner(ws, RPT_ID)
+    
+    If axisRPT_ID = "" Then axisRPT_ID = RPT_ID
+    
+    'find upper left cell
+    Dim uCell As Range
+        Set uCell = ws.Range(EA.GetDataTopLeftCell(ws, axisRPT_ID)).Offset(0, -1)
+    
+    'find first value that is closet to left
+    Dim goThisWay As Long, totalMembers As Long
+    goThisWay = -1
+    
 lookForRow:
-
-Do Until InStr(2, uCell.Formula, "EPMlocal", vbTextCompare) > 0 Or InStr(2, uCell.Formula, "EPMOlapMemberO", vbTextCompare) > 0 And _
-    InStr(2, uCell.Formula, axisRPT_ID, vbTextCompare) > 0
-
-Set uCell = uCell.Offset(0, goThisWay)
-
-If uCell.Column = 1 Then
-    goThisWay = 1
-    Set uCell = Cells(uCell.Row, Range(EA.GetDataBottomRightCell(ws, axisRPT_ID)).Column).Offset(0, goThisWay)
-    GoTo lookForRow
-End If
     
-Loop
+    Do Until InStr(2, uCell.Formula, "EPMlocal", vbTextCompare) > 0 Or InStr(2, uCell.Formula, "EPMOlapMemberO", vbTextCompare) > 0 And _
+        InStr(2, uCell.Formula, axisRPT_ID, vbTextCompare) > 0
 
-totalMembers = EA.GetRowAxisDimensionCount(ws, axisRPT_ID) - 1
-
-'if on the left...
-    If goThisWay = -1 Then Set uCell = uCell.Offset(0, totalMembers * -1)
+        Set uCell = uCell.Offset(0, goThisWay)
+        
+        If uCell.Column = 1 Then
+            goThisWay = 1
+            Set uCell = Cells(uCell.Row, Range(EA.GetDataBottomRightCell(ws, axisRPT_ID)).Column).Offset(0, goThisWay)
+            GoTo lookForRow
+        End If
+    Loop
     
-
-FirstRowAxisNumber = uCell.Column
+    totalMembers = EA.GetRowAxisDimensionCount(ws, axisRPT_ID) - 1
     
+    'if on the left...
+        If goThisWay = -1 Then Set uCell = uCell.Offset(0, totalMembers * -1)
 
-
+    FirstRowAxisNumber = uCell.Column
 End Function
 
 
 Private Sub RejectionOfLocalMember()
-Const theTitle As String = "Not a valid intersection"
+    Const theTitle As String = "Not a valid intersection"
 
-MsgBox "Your intersection includes a local member in cell " & LocalMemberFound.Address & " """ & LocalMemberFound.Value & """", vbCritical, theTitle
+    MsgBox "Your intersection includes a local member in cell " & LocalMemberFound.Address & " """ & LocalMemberFound.Value & """", vbCritical, theTitle
 
-Set LocalMemberFound = Nothing
-
+    Set LocalMemberFound = Nothing
 End Sub
 
 
 Private Function getCOLmembers(rCell As Range) As String
-Dim c As Long, allCOLMembers() As String, theDim As Range, memberID As String
-
-If EA Is Nothing Then Set EA = ntt_BPC_API
-
-allCOLMembers = EA.GetColumnAxisMembers(ws, RPT_ID)
-
-'Find Starting row
-    Dim rowX As Long: rowX = FirstColAxisNumber(allCOLMembers(0))
-    If StopEverything Then Exit Function
-
-
-'Loop through all members in Column Axis
-    For c = rowX To rowX + EA.GetColumnAxisDimensionCount(rCell.Worksheet, RPT_ID) - 1
-        Set theDim = ws.Cells(c, rCell.Column)
-        
-
-        Do Until Not IsEmpty(theDim)
-            Set theDim = theDim.Offset(0, -1)
-        Loop
-        
-        'capture memberID
-        memberID = Evaluate("=EPMMemberID(" & theDim.Address & ")")
-        
-        'Test if LOCAL MEMBER or something else
-        If memberID = Evaluate("=EPMMemberID(xfa999999)") Then
-            Set LocalMemberFound = theDim
-            StopEverything = True
-            getCOLmembers = "end"
-            Exit For
-        End If
-        
-        
-        'String together results
-        getCOLmembers = getCOLmembers & memberID & ","
+    Dim c As Long, allCOLMembers() As String, theDim As Range, memberID As String
     
-    Next c
-
-'gets rid of last comma
-getCOLmembers = Mid(getCOLmembers, 1, Len(getCOLmembers) - 1)
-
+    If EA Is Nothing Then Set EA = ntt_BPC_API
+    
+    allCOLMembers = EA.GetColumnAxisMembers(ws, RPT_ID)
+    
+    'Find Starting row
+        Dim rowX As Long: rowX = FirstColAxisNumber(allCOLMembers(0))
+        If StopEverything Then Exit Function
+    
+    
+    'Loop through all members in Column Axis
+        For c = rowX To rowX + EA.GetColumnAxisDimensionCount(rCell.Worksheet, RPT_ID) - 1
+            Set theDim = ws.Cells(c, rCell.Column)
+    
+            Do Until Not IsEmpty(theDim)
+                Set theDim = theDim.Offset(0, -1)
+            Loop
+    
+            'capture memberID
+            memberID = Evaluate("=EPMMemberID(" & theDim.Address & ")")
+            
+            'Test if LOCAL MEMBER or something else
+            If memberID = Evaluate("=EPMMemberID(xfa999999)") Then
+                Set LocalMemberFound = theDim
+                StopEverything = True
+                getCOLmembers = "end"
+                Exit For
+            End If
+    
+            'String together results
+            getCOLmembers = getCOLmembers & memberID & ","
+    
+        Next c
+    
+    'gets rid of last comma
+    getCOLmembers = Mid(getCOLmembers, 1, Len(getCOLmembers) - 1)
 End Function
 
 Private Function FirstColAxisNumber(memberID As String) As Long
-If EA Is Nothing Then Set EA = ntt_BPC_API
-
-Dim axisRPT_ID As String
-
-'confirm the row axis is not shared
-axisRPT_ID = EA.GetColumnAxisOwner(ws, RPT_ID)
-
-If axisRPT_ID = "" Then axisRPT_ID = RPT_ID
-
-'find first top cell
-Dim uCell As Range
-Set uCell = ws.Range(EA.GetDataTopLeftCell(ws, axisRPT_ID)).Offset(-1, 0)
-
-'find first column axis member
-Dim totalMembers As Long
-
-Do Until InStr(2, uCell.Formula, "EPMlocal", vbTextCompare) > 0 Or InStr(2, uCell.Formula, "EPMOlapMemberO", vbTextCompare) > 0 And _
-    InStr(2, uCell.Formula, axisRPT_ID, vbTextCompare) > 0
-
-    Set uCell = uCell.Offset(-1, 0)
-
-Loop
-
-totalMembers = EA.GetColumnAxisDimensionCount(ws, axisRPT_ID) - 1
-
-FirstColAxisNumber = uCell.Offset(totalMembers * -1, 0).Row
+    If EA Is Nothing Then Set EA = ntt_BPC_API
     
+    Dim axisRPT_ID As String
+    
+    'confirm the row axis is not shared
+    axisRPT_ID = EA.GetColumnAxisOwner(ws, RPT_ID)
+    
+    If axisRPT_ID = "" Then axisRPT_ID = RPT_ID
+    
+    'find first top cell
+    Dim uCell As Range
+    Set uCell = ws.Range(EA.GetDataTopLeftCell(ws, axisRPT_ID)).Offset(-1, 0)
+    
+    'find first column axis member
+    Dim totalMembers As Long
+    
+    Do Until InStr(2, uCell.Formula, "EPMlocal", vbTextCompare) > 0 Or InStr(2, uCell.Formula, "EPMOlapMemberO", vbTextCompare) > 0 And _
+        InStr(2, uCell.Formula, axisRPT_ID, vbTextCompare) > 0
+    
+        Set uCell = uCell.Offset(-1, 0)
+    Loop
+    
+    totalMembers = EA.GetColumnAxisDimensionCount(ws, axisRPT_ID) - 1
+    
+    FirstColAxisNumber = uCell.Offset(totalMembers * -1, 0).Row
 End Function
 
 Private Function igetMemberfromDIM(theDim As String) As String
-If EA Is Nothing Then Set EA = ntt_BPC_API
-Dim d As Long
-
-'Check Row Access
-For d = 0 To UBound(RowMembers)
-    If EA.GetMemberDimension(EA.GetActiveConnection(ws), RowMembers(d)) = theDim Then
-        igetMemberfromDIM = RowMembers(d)
-        Exit Function
-    End If
-Next d
-
-For d = 0 To UBound(ColMembers)
-    If EA.GetMemberDimension(EA.GetActiveConnection(ws), ColMembers(d)) = theDim Then
-        igetMemberfromDIM = ColMembers(d)
-        Exit Function
-    End If
-Next d
-
-For d = 0 To UBound(PageMembers)
-    If EA.GetMemberDimension(EA.GetActiveConnection(ws), PageMembers(d)) = theDim Then
-        igetMemberfromDIM = PageMembers(d)
-        Exit Function
-    End If
-Next d
-
-igetMemberfromDIM = Evaluate("=EPMCONTEXTMEMBER(,""" & theDim & """)")
-
-
+    If EA Is Nothing Then Set EA = ntt_BPC_API
+    Dim d As Long
+    
+    'Check Row Access
+    For d = 0 To UBound(RowMembers)
+        If EA.GetMemberDimension(EA.GetActiveConnection(ws), RowMembers(d)) = theDim Then
+            igetMemberfromDIM = RowMembers(d)
+            Exit Function
+        End If
+    Next d
+    
+    For d = 0 To UBound(ColMembers)
+        If EA.GetMemberDimension(EA.GetActiveConnection(ws), ColMembers(d)) = theDim Then
+            igetMemberfromDIM = ColMembers(d)
+            Exit Function
+        End If
+    Next d
+    
+    For d = 0 To UBound(PageMembers)
+        If EA.GetMemberDimension(EA.GetActiveConnection(ws), PageMembers(d)) = theDim Then
+            igetMemberfromDIM = PageMembers(d)
+            Exit Function
+        End If
+    Next d
+    
+    igetMemberfromDIM = Evaluate("=EPMCONTEXTMEMBER(,""" & theDim & """)")
 End Function
 
 
@@ -481,33 +446,40 @@ Dim c As Long
             TypeOFDim = Chr(c)
             Exit Function
         End If
-        
     Next c
     
     TypeOFDim = "U"
-
 End Function
 
 
 Private Function ReturnDimMember(dimNAME As String) As String
-dimNAME = UCase(dimNAME)
-Dim d As Long
-For d = 0 To UBound(AllDimensions)
-    If UCase(AllDimensions(d).i_DimName) = dimNAME Then
-        ReturnDimMember = AllDimensions(d).i_DimID
-        Exit Function
+    dimNAME = UCase(dimNAME)
+    Dim d As Long
+    For d = 0 To UBound(AllDimensions)
+        If UCase(AllDimensions(d).i_DimName) = dimNAME Then
+            ReturnDimMember = AllDimensions(d).i_DimID
+            Exit Function
+        End If
+    Next d
+
+
+    'check for dimenion type (Allows users to just put in letter such as "A")
+runPull:
+    For d = 0 To UBound(AllDimensions)
+        If UCase(AllDimensions(d).i_Type) = dimNAME Then
+            ReturnDimMember = AllDimensions(d).i_DimID
+            Exit Function
+        End If
+    Next d
+
+    'Could not find member. If Rate, modify to Category...
+    If dimNAME = "R" Then
+        dimNAME = "C"
+        GoTo runPull
+    Else
+        MsgBox "error when pulling dimension"
+        Stop
     End If
-Next d
-
-
-'check for dimenion type (Allows users to just put in "A"
-For d = 0 To UBound(AllDimensions)
-    If UCase(AllDimensions(d).i_Type) = dimNAME Then
-        ReturnDimMember = AllDimensions(d).i_DimID
-        Exit Function
-    End If
-Next d
-
 
 
 End Function
@@ -569,8 +541,6 @@ Dim cRng As Range, g As Long
 For c = LBound(fullDimText) To UBound(fullDimText)
     
     If g + 2 = ActiveSheet.UsedRange.Columns.Count Then Exit For
-
-
     Set cRng = Intersect(Range(tangoFIND, Cells(Rows.Count, tangoFIND.Column)), ActiveSheet.UsedRange)
     
     If Application.WorksheetFunction.CountA(cRng) = Application.WorksheetFunction.CountIf(cRng, tangoFIND.Value2) Then
@@ -606,28 +576,24 @@ Next c
 
     If UserWantsReduction Then EA.RefreshActiveSheet
 nodata:
-
 End Sub
 
 Private Sub nameNewSheet(theWS As Worksheet)
-Dim sCount As Long
-Dim newName As String
-sCount = 0
-  
-  
+    Dim sCount As Long, newName As String
+    sCount = 0
+ 
 runCheck:
-newName = sName & Application.WorksheetFunction.Base(sCount, 10, 3)
-
-Dim aSh As Worksheet
-For Each aSh In ActiveWorkbook.Worksheets
-    If aSh.Name = newName Then
-        sCount = sCount + 1
-        GoTo runCheck
-    End If
-Next aSh
-
-theWS.Name = newName
-
+    newName = sName & Application.WorksheetFunction.Base(sCount, 10, 3)
+    
+    Dim aSh As Worksheet
+    For Each aSh In ActiveWorkbook.Worksheets
+        If aSh.Name = newName Then
+            sCount = sCount + 1
+            GoTo runCheck
+        End If
+    Next aSh
+    
+    theWS.Name = newName
 End Sub
 
 Private Function ntt_BPC_API() As Object
@@ -653,5 +619,4 @@ Private Function ntt_BPC_API() As Object
             MsgBox NoConnectMessage
             End
         End If
-   
 End Function
