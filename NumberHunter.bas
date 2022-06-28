@@ -3,7 +3,7 @@ Const sName As String = "NunberHunter_"
 Const showGridelines As Boolean = False
 Const noFormatSheet As String = "No Format Sheet"
 Const setFreezePanes As Boolean = True
-
+Const showZeroIntersections As Boolean = True
 
 
 Dim EA As Object
@@ -91,9 +91,7 @@ End Function
 
 
 
-
 Private Sub clearButtons(theName As String)
-
 Dim i As Long
 
 For i = Application.CommandBars("Cell").Controls.Count To 1 Step -1
@@ -107,34 +105,26 @@ For i = Application.CommandBars("Cell").Controls.Count To 1 Step -1
     End With
     
 Next i
-
 End Sub
-
-
-
 
 
 Private Sub Full_Number_Hunter(rCell As Range)
 Set ws = rCell.Worksheet
-
-'get report ID
     RPT_ID = getReportID(rCell)
 
-'Test if valid ID
+
     If StopEverything Then GoTo endTHIS
 
-'Find Row key members
+
     RowMembers = Split(getROWmembers(rCell), ",")
     If StopEverything Then GoTo endTHIS
     
-'Find Column key members
+
     ColMembers = Split(getCOLmembers(rCell), ",")
     If StopEverything Then GoTo endTHIS
-    
-'Find Page Axis Members
+
     PageMembers = EA.GetPageAxisMembers(ws, RPT_ID)
 
-'Put dimensions into collection of dims array
     Dim pullDIMS() As String
     pullDIMS = EA.GetDimensionList(EA.GetActiveConnection(ws))
     
@@ -156,7 +146,6 @@ Set ws = rCell.Worksheet
     ActiveWorkbook.Sheets.Add
         Set nws = ActiveSheet
         
-        'renames sheet
         Call nameNewSheet(nws)
         
         ActiveWindow.DisplayGridlines = showGridelines
@@ -187,8 +176,13 @@ Set ws = rCell.Worksheet
             End If
             DoEvents
         Next d
-            
-        EA.SetSheetOption nws, 7, True
+                
+        If showZeroIntersections Then
+            EA.SetSheetOption nws, 7, True
+                Else
+            EA.SetSheetOption nws, 14, True
+        End If
+                    
         
         EA.SetSheetOption nws, 111, True 'Clear formatting
         
@@ -200,8 +194,6 @@ Set ws = rCell.Worksheet
 
         EA.SetSheetOption nws, 100, True 'Show row header
         EA.RefreshActiveSheet
-               
-
         
         'check for single member rows.
         Call ClearSingleDimRows
@@ -227,7 +219,6 @@ StopEverything = False
 
 End Sub
 
-
 Private Function getReportID(rCell As Range) As String
  If EA Is Nothing Then Set EA = ntt_BPC_API
     Dim rptNAmes() As String, r As Long
@@ -249,8 +240,6 @@ Private Function getReportID(rCell As Range) As String
     Next r
     
     StopEverything = True
-
-
 End Function
 
 
@@ -278,7 +267,6 @@ allRowMembers = EA.GetRowAxisMembers(ws, RPT_ID)
     For c = columnX To columnX + EA.GetRowAxisDimensionCount(rCell.Worksheet, RPT_ID) - 1
         Set theDim = ws.Cells(rCell.Row, c)
         
-
         Do Until Not IsEmpty(theDim)
             Set theDim = theDim.Offset(-1, 0)
         Loop
@@ -308,7 +296,6 @@ allRowMembers = EA.GetRowAxisMembers(ws, RPT_ID)
 
 'gets rid of last comma
 getROWmembers = Mid(getROWmembers, 1, Len(getROWmembers) - 1)
-
 End Function
 
 
@@ -352,9 +339,6 @@ totalMembers = EA.GetRowAxisDimensionCount(ws, axisRPT_ID) - 1
     
 
 FirstRowAxisNumber = uCell.Column
-    
-
-
 End Function
 
 
@@ -383,7 +367,6 @@ allCOLMembers = EA.GetColumnAxisMembers(ws, RPT_ID)
 'Loop through all members in Column Axis
     For c = rowX To rowX + EA.GetColumnAxisDimensionCount(rCell.Worksheet, RPT_ID) - 1
         Set theDim = ws.Cells(c, rCell.Column)
-        
 
         Do Until Not IsEmpty(theDim)
             Set theDim = theDim.Offset(0, -1)
@@ -508,6 +491,11 @@ For d = 0 To UBound(AllDimensions)
     End If
 Next d
 
+If dimNAME = "R" Then
+    ReturnDimMember = AllDimensions("C").i_DimID
+End If
+
+
 
 
 End Function
@@ -548,23 +536,19 @@ Private Sub ClearSingleDimRows()
 If EA Is Nothing Then Set EA = ntt_BPC_API
 Dim c As Long, fullDimText() As String, tangoFIND As Range, UserWantsReduction As Boolean
 
-'does not run on single member
 If EA.GetRowAxisDimensionCount(ActiveSheet, "000") = 1 Then Exit Sub
 
 
 fullDimText = EA.GetRowAxisMembers(ActiveSheet, "000")
 
-'eliminates members not needed
 ReDim Preserve fullDimText(EA.GetRowAxisDimensionCount(ActiveSheet, "000") - 1)
 
-'find first instance
     Set tangoFIND = ActiveSheet.Cells.Find(fullDimText(0), _
         LookIn:=xlFormulas, LookAt:=xlPart, _
         SearchOrder:=xlByRows, SearchDirection:=xlNext, _
         MatchCase:=False, SearchFormat:=False)
 
 
-'Loop through first row of dims
 Dim cRng As Range, g As Long
 For c = LBound(fullDimText) To UBound(fullDimText)
     
