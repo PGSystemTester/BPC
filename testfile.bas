@@ -29,16 +29,15 @@ End Enum
 
 
 Sub NumberHunter()
-Set EA = Nothing
-Call Full_Number_Hunter(ActiveCell)
-Set EA = Nothing
-
+    Set EA = Nothing
+    Call Full_Number_Hunter(ActiveCell)
+    Set EA = Nothing
 End Sub
 
 Sub addRemoveBotton(adIsTrue As Boolean)
-Const zCaption = "Number Hunter"
-Const zMacro = "NumberHunter"
-Dim iconExist As Boolean
+    Const zCaption = "Number Hunter"
+    Const zMacro = "NumberHunter"
+    Dim iconExist As Boolean
 
 'must have this code in workbook module
     'Private Sub Workbook_Activate()
@@ -63,13 +62,12 @@ If adIsTrue Then
            .Style = msoButtonCaption
            .OnAction = zMacro
         End With
-    End If
-ElseIf iconExist Then
+        End If
+    ElseIf iconExist Then
 
     Call clearButtons(zCaption)
     
 End If
-
      
 End Sub
 
@@ -227,11 +225,10 @@ Set ws = Nothing
 Set EA = Nothing
 StopEverything = False
 
-
 End Sub
 
 Private Function getReportID(rCell As Range) As String
- If EA Is Nothing Then Set EA = ntt_BPC_API
+ If EA Is Nothing Then Set EA = nHunter_ApiObject
     Dim rptNAmes() As String, r As Long
     
     'captures all reports on sheet
@@ -252,7 +249,6 @@ Private Function getReportID(rCell As Range) As String
     
     StopEverything = True
 
-
 End Function
 
 
@@ -261,7 +257,7 @@ End Function
 Private Function getROWmembers(rCell As Range) As String
 Dim c As Long, allRowMembers() As String, theDim As Range, memberID As String, axis_RPT_ID As String
 
-If EA Is Nothing Then Set EA = ntt_BPC_API
+If EA Is Nothing Then Set EA = nHunter_ApiObject
 
 axis_RPT_ID = EA.GetRowAxisOwner(ws, RPT_ID)
 If axis_RPT_ID = "" Then axis_RPT_ID = RPT_ID
@@ -269,12 +265,10 @@ If axis_RPT_ID = "" Then axis_RPT_ID = RPT_ID
 
 allRowMembers = EA.GetRowAxisMembers(ws, RPT_ID)
 
-
     Dim columnX As Long: columnX = FirstRowAxisNumber(allRowMembers(0))
 
 
     If StopEverything Then Exit Function
-
 
 'Loop through all members in Row Axis
     For c = columnX To columnX + EA.GetRowAxisDimensionCount(rCell.Worksheet, RPT_ID) - 1
@@ -295,8 +289,7 @@ allRowMembers = EA.GetRowAxisMembers(ws, RPT_ID)
             StopEverything = True
             getROWmembers = "end"
             Exit For
-        
-        
+                
         Else
             'defense code
            ' StopEverything = Evaluate("=Iserror(Colerror)")
@@ -314,7 +307,7 @@ End Function
 
 
 Private Function FirstRowAxisNumber(memberID As String) As Long
-If EA Is Nothing Then Set EA = ntt_BPC_API
+If EA Is Nothing Then Set EA = nHunter_ApiObject
 
 Dim axisRPT_ID As String
 
@@ -369,7 +362,7 @@ End Sub
 Private Function getCOLmembers(rCell As Range) As String
 Dim c As Long, allCOLMembers() As String, theDim As Range, memberID As String
 
-If EA Is Nothing Then Set EA = ntt_BPC_API
+If EA Is Nothing Then Set EA = nHunter_ApiObject
 
 allCOLMembers = EA.GetColumnAxisMembers(ws, RPT_ID)
 
@@ -408,7 +401,7 @@ getCOLmembers = Mid(getCOLmembers, 1, Len(getCOLmembers) - 1)
 End Function
 
 Private Function FirstColAxisNumber(memberID As String) As Long
-If EA Is Nothing Then Set EA = ntt_BPC_API
+If EA Is Nothing Then Set EA = nHunter_ApiObject
 
 Dim axisRPT_ID As String
 
@@ -438,7 +431,7 @@ FirstColAxisNumber = uCell.Offset(totalMembers * -1, 0).Row
 End Function
 
 Private Function igetMemberfromDIM(theDim As String) As String
-If EA Is Nothing Then Set EA = ntt_BPC_API
+If EA Is Nothing Then Set EA = nHunter_ApiObject
 Dim d As Long
 
 'Check Row Access
@@ -464,8 +457,6 @@ For d = 0 To UBound(PageMembers)
 Next d
 
 igetMemberfromDIM = Evaluate("=EPMCONTEXTMEMBER(,""" & theDim & """)")
-
-
 End Function
 
 
@@ -534,7 +525,7 @@ Dim d As Long
 End Sub
 
 Private Sub ClearSingleDimRows()
-If EA Is Nothing Then Set EA = ntt_BPC_API
+If EA Is Nothing Then Set EA = nHunter_ApiObject
 Dim c As Long, fullDimText() As String, tangoFIND As Range, UserWantsReduction As Boolean
 
 'does not run on single member
@@ -614,23 +605,22 @@ For Each aSh In ActiveWorkbook.Worksheets
 Next aSh
 
 theWS.Name = newName
-
 End Sub
 
-Private Function ntt_BPC_API() As Object
+Private Function nHunter_ApiObject() As Object
     Const NoConnectMessage As String = "No Connection Found"
     Dim aoComAdd As Object, successConnection As Boolean, ObjAddOn As COMAddIn
  
         For Each ObjAddOn In Application.COMAddIns
             If ObjAddOn.progID = "FPMXLClient.Connect" Then
                 'EPM/BPC
-               Set ntt_BPC_API = ObjAddOn.Object
+               Set nHunter_ApiObject = ObjAddOn.Object
                 successConnection = True
                 Exit For
             ElseIf ObjAddOn.progID = "SapExcelAddIn" Then
                 'Analysis for Office Version
                Set aoComAdd = ObjAddOn.Object
-                Set ntt_BPC_API = aoComAdd.GetPlugin("com.sap.epm.FPMXLClient")
+                Set nHunter_ApiObject = aoComAdd.GetPlugin("com.sap.epm.FPMXLClient")
                 successConnection = True
                 Exit For
             End If
@@ -640,5 +630,4 @@ Private Function ntt_BPC_API() As Object
             MsgBox NoConnectMessage
             End
         End If
-   
 End Function
