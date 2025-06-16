@@ -67,7 +67,7 @@ IIF([%ACCOUNT%].CURRENTMEMBER.PROPERTIES("2/CPMB/ACCTYPE")="EXP",(1/12)*SUM(LAST
 
 ## Prior Year Balancers
 - Similar results to **Periodic**, **QTD** or **YTD** in monthly model, but prior year time setting.
-- Treats `LEQ` and `AST` accounts the same at all time levels by showing ending period prior year of respective base period (`Q3` = `Sep`, `YEAR= `Dec`)
+- Treats `LEQ` and `AST` accounts the same at all time levels by showing ending period prior year of respective base period (`Q3` = `Sep`, `YEAR` = `Dec`)
 - To get proper name of level property go to RSA1 and look at model Time dimension, then attributes **TILEVEL**
 
 #### PY_PERIODIC
