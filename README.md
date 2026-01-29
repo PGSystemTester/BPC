@@ -3,7 +3,7 @@ Misc [SAP BPC]([url](https://help.sap.com/docs/SAP_S4HANA_ON-PREMISE/74785309615
 
 
 ## Notepad ++ UDL for BPC Script Logic
-[This is a user defined language for Notepad++ ]([url](https://github.com/PGSystemTester/BPC/blob/main/NotePad_%2B%2B_BPC_Script_Logic_UDL.xml))I made which simulates (mostly) the web code editor in Notepad ++.
+[This is a user defined language for Notepad++ ](NotePad_++_BPC_Script_Logic_UDL.xml)I made which simulates (mostly) the web code editor in Notepad ++.
 
 
 
