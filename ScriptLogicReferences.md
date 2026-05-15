@@ -1,0 +1,92 @@
+# Script Logic References
+
+See [NotePad++ language formatter](https://github.com/PGSystemTester/BPC/blob/main/NotePad_%2B%2B_BPC_Script_Logic_UDL.xml)
+
+## Select Statements
+
+### Filter from %Dim_Set%
+In below example, variable `%FRIENDLY%` would be scoped to AC_S91148 if it was part of the account set.
+
+
+```js
+//Filter members
+*SELECT(%EXCLUDE%,[ID],ACCOUNT,"CALC=N and ID<>AC_S91148")
+*SELECT(%FRIENDLY%,[ID],ACCOUNT,"ID=%ACCOUNT_SET% AND ID<>%EXCLUDE%")
+//%FRIENDLY% would be properly scoped.
+```
+
+
+### Time Statements
+
+```js
+*SELECT(%STARTMNTH%,[STARTMNTH],VERSION,"[ID]=%VERSION_SET%")
+*SELECT(%START_TIMEID%,[TIMEID],TIME,"[ID]=%STARTMNTH%")
+*SELECT(%END_TIMEID%,[TIMEID],TIME,"[ID]=%ENDMNTH%")
+*SELECT(%STARTMERITPER%,[MERIT_PERIOD],TIME,"[ID]="%STARTMNTH%")
+
+*SELECT(%TIME_FEB_DEC%,[ID],TIME,"[ID]=%TIME_SET% AND PERIOD<>JAN")
+*SELECT(%MERITPER%,[MERIT_PERIOD],TIME,"[ID]=%TIME_SET%")
+```
+
+## Prior Month Property In Script Logic
+- Below code will write data from prior month into the current time period being run on
+- TMVL(-1,`time`) will be on period prior
+
+```js
+*FOR %EACH_TIME% = %TIME_SET% 
+
+  //Double check these... as where data is being pulled from
+  *XDIM_MEMBERSET ACCOUNT = 3300001,18000
+  *XDIM_MEMBERSET DATASRC = CYNI_ELIM,INPUT_USD
+  *XDIM_MEMBERSET COCODE = CO_1515,CO_1510
+
+  ///These should be left alone for capturing prior month's data
+  *XDIM_MEMBERSET TIME =TMVL(-1,%EACH_TIME%)
+  *XDIM_MEMBERSET VERSION = %VERSION_SET%
+
+  *WHEN TIME
+      //grabs prior month data, but will write it into current month
+      *IS TMVL(-1,%EACH_TIME%)
+          *WHEN COCODE
+          *IS CO_1515
+              // make sure these are correct as far as account/datasrc/company
+              *REC(FACTOR = -1,TIME=%EACH_TIME%,ACCOUNT = 180000,DATASRC=CYNI_ELIM ,COCODE = CO_ELIM2)
+              *REC(FACTOR = 1,TIME=%EACH_TIME%,ACCOUNT = 330001,DATASRC=CYNI_ELIM ,COCODE = CO_ELIM2)
+
+          *ENDWHEN
+  *ENDWHEN
+  *COMMITT
+*NEXT
+```
+
+
+## Sorting Select Statement
+````
+*SELECT(%P12MERIT%,[ID],TIME,"[ID]=%MERITPER% AND [TIMEID]< %END_TIMEID%",SORTBY=TIMEID)
+````
+
+
+## Calculations in *Red Line
+
+*XDIM_MEMBERSET DATASRC = BAS(STANDALONE)
+*XDIM_MEMBERSET RPTCURRENCY = LC
+*XDIM_MEMBERSET SCENARIO = %SCENARIO_SET%
+*XDIM_MEMBERSET TIME = %EACH_P12MERIT%
+*XDIM_MEMBERSET WF_ACCOUNT = PAYRATEEE
+
+*WHEN EMPLOYEE
+	*IS BAS(EMPLOYEE) //EXISTING
+
+		*WHEN RPTCOSTCENTER
+			*IS BAS(USA)
+				*REC(EXPRESSION = %VALUE% * ( 1 + ([COMPANY].[NO_CO],[DATASRC].[INPUT],[EMPLOYEE].[NO EMPLOYEE],[FUNCTIONS].[NO_FUNC],[LOCATION].[NO_LOCATION],[PROFITCENTER].[NO_PC],[RPTCOSTCENTER].[NO_CC],[RPTCURRENCY].[LC],[TIME].[%EACH_NEXT_P12MERIT%],[WF_ACCOUNT].[MERITPCTDOM]) ),DATASRC=LOGIC_WFP,TIME=%EACH_NEXT_P12MERIT%)
+
+			*IS BAS(IND)
+				*REC(EXPRESSION = %VALUE% * ( 1 + ([COMPANY].[NO_CO],[DATASRC].[INPUT],[EMPLOYEE].[NO EMPLOYEE],[FUNCTIONS].[NO_FUNC],[LOCATION].[NO_LOCATION],[PROFITCENTER].[NO_PC],[RPTCOSTCENTER].[NO_CC],[RPTCURRENCY].[LC],[TIME].[%EACH_NEXT_P12MERIT%],[WF_ACCOUNT].[MERITPCTINDIA]) ),DATASRC=LOGIC_WFP,TIME=%EACH_NEXT_P12MERIT%)
+
+			*ELSE
+				*REC(EXPRESSION = %VALUE% * ( 1 + ([COMPANY].[NO_CO],[DATASRC].[INPUT],[EMPLOYEE].[NO EMPLOYEE],[FUNCTIONS].[NO_FUNC],[LOCATION].[NO_LOCATION],[PROFITCENTER].[NO_PC],[RPTCOSTCENTER].[NO_CC],[RPTCURRENCY].[LC],[TIME].[%EACH_NEXT_P12MERIT%],[WF_ACCOUNT].[MERITPCTOTHER]) ),DATASRC=LOGIC_WFP,TIME=%EACH_NEXT_P12MERIT%)
+				
+	  *ENDWHEN
+*ENDWHEN
+*COMMIT
